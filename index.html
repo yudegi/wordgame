@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yusuf Hoca - İngilizce Kelime Oyunu</title>
+    <style>
+        :root { --primary: #1a73e8; --success: #34a853; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: var(--bg); margin: 0; padding: 20px; }
+        #loading { margin-top: 100px; font-size: 24px; color: #666; }
+        #game-area { display: none; }
+        .word-display { font-size: 80px; font-weight: 800; color: var(--primary); margin: 30px 0; }
+        .options-container { display: flex; justify-content: center; gap: 25px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
+        .card { width: 280px; height: 280px; border: 10px solid white; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 16px rgba(0,0,0,0.1); transition: all 0.3s; object-fit: cover; background: white; }
+        .card:hover { transform: scale(1.05); border-color: var(--success); }
+    </style>
+</head>
+<body>
+
+    <div id="loading">Buluttan kelimeler senkronize ediliyor... ☁️</div>
+
+    <div id="game-area">
+        <div class="word-display" id="target-word">...</div>
+        <div class="options-container" id="options-container"></div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+        // --- BU KISMI KENDİ BİLGİLERİNLE DOLDUR ---
+        const GITHUB_USER = "GitHubKullaniciAdin"; 
+        const REPO_NAME = "kelime-oyunu";
+        // ----------------------------------------
+
+        const API_URL = `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/`;
+        let wordList = [];
+        let currentWord = null;
+
+        async function fetchFromGitHub() {
+            try {
+                const response = await fetch(API_URL);
+                const files = await response.json();
+                let wordData = {};
+
+                files.forEach(file => {
+                    if (file.type === "file") {
+                        const parts = file.name.split('.');
+                        const ext = parts.pop().toLowerCase();
+                        const name = parts.join('.').toLowerCase();
+
+                        if (!wordData[name]) wordData[name] = { rawName: name };
+
+                        // GitHub'ın raw (ham) dosya linkini alıyoruz
+                        const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main/${file.name}`;
+
+                        if (['png', 'jpg', 'jpeg'].includes(ext)) wordData[name].img = rawUrl;
+                        if (ext === 'mp3') wordData[name].audio = rawUrl;
+                    }
+                });
+
+                wordList = Object.values(wordData).filter(item => item.img && item.audio);
+                
+                if (wordList.length > 0) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('game-area').style.display = 'block';
+                    nextRound();
+                } else {
+                    document.getElementById('loading').innerText = "Hata: Klasörde eşleşen dosya bulunamadı!";
+                }
+            } catch (error) {
+                document.getElementById('loading').innerText = "Bulut bağlantısı kurulamadı!";
+            }
+        }
+
+        function formatWord(text) {
+            return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+        }
+
+        function nextRound() {
+            currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+            document.getElementById('target-word').innerText = formatWord(currentWord.rawName);
+            
+            const player = document.getElementById('audio-player');
+            player.src = currentWord.audio;
+            player.play().catch(e => console.log("Ses çalma hatası:", e));
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            let choices = [...wordList].sort(() => 0.5 - Math.random()).slice(0, 3);
+            if (!choices.find(item => item.rawName === currentWord.rawName)) {
+                choices[0] = currentWord;
+            }
+            choices.sort(() => 0.5 - Math.random());
+
+            choices.forEach(item => {
+                const img = document.createElement('img');
+                img.src = item.img;
+                img.className = 'card';
+                img.onclick = () => {
+                    if (item.rawName === currentWord.rawName) setTimeout(nextRound, 500);
+                    else alert("Try Again! ❌");
+                };
+                container.appendChild(img);
+            });
+        }
+
+        // Oyunu otomatik başlat
+        fetchFromGitHub();
+    </script>
+</body>
+</html>
