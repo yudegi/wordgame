@@ -15,14 +15,14 @@
     <style>
         :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --bg: #f8f9fa; }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; background-color: var(--bg); margin: 0; padding: 10px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; background-color: var(--bg); margin: 0; padding: 10px; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
         
-        .stats { display: flex; justify-content: space-around; background: white; padding: 10px; border-bottom: 3px solid #ddd; font-size: 20px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .stats { display: flex; justify-content: space-around; background: white; padding: 10px; border-bottom: 3px solid #ddd; font-size: 20px; font-weight: bold; position: sticky; top: 0; z-index: 100; width: 100%; }
         .timer { color: var(--danger); }
         .score { color: var(--primary); }
 
-        #game-area { display: none; margin-top: 10px; }
-        #start-screen { margin-top: 50px; padding: 20px; }
+        #game-area { display: none; margin-top: 10px; flex-grow: 1; }
+        #start-screen { margin-top: 50px; padding: 20px; flex-grow: 1; }
         
         .word-display { font-size: 40px; font-weight: 800; color: var(--primary); margin: 10px 0; word-wrap: break-word; }
         
@@ -49,6 +49,16 @@
         }
         .correct-icon { color: var(--success); }
         .wrong-icon { color: var(--danger); }
+
+        /* KELİME SAYACI - SAĞ ALT */
+        #word-counter {
+            position: fixed;
+            bottom: 5px;
+            right: 10px;
+            font-size: 11px;
+            color: #888;
+            font-weight: normal;
+        }
 
         @media (min-width: 600px) {
             .options-container { grid-template-columns: repeat(2, 260px); justify-content: center; gap: 20px; }
@@ -77,6 +87,7 @@
             <button class="btn btn-start" onclick="startGame()">Oyunu Başlat</button><br>
             <button class="btn btn-leaderboard" onclick="openLeaderboard()">Sıralamayı Gör</button>
         </div>
+        <div id="word-counter">Kelimeler taranıyor...</div>
     </div>
 
     <div id="game-area">
@@ -147,11 +158,20 @@
                     }
                 });
                 wordList = Object.values(data).filter(i => i.img && i.audio);
+                
+                // Sayacı Güncelle
+                document.getElementById('word-counter').innerText = `Sistemde ${wordList.length} aktif kelime yüklü.`;
+
                 if (wordList.length >= 4) {
-                    document.getElementById('loading-msg').innerText = "Dosyalar hazır.";
+                    document.getElementById('loading-msg').innerText = "Hazırsan başlayalım!";
                     document.getElementById('start-controls').style.display = 'block';
+                } else {
+                    document.getElementById('loading-msg').innerText = "En az 4 kelime (img+mp3) gerekli!";
                 }
-            } catch (e) { document.getElementById('loading-msg').innerText = "Hata!"; }
+            } catch (e) { 
+                document.getElementById('loading-msg').innerText = "Hata!"; 
+                document.getElementById('word-counter').innerText = "Bağlantı kurulamadı.";
+            }
         }
 
         function startGame() {
