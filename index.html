@@ -3,38 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelime Testi</title>
+    <title>Yusuf Hoca - Global Kelime Avcıları</title>
     
-    <!-- Firebase SDK (Compatibility Mode) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
     <style>
         :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; background-color: var(--bg); margin: 0; padding: 10px; }
-        
-        /* Üst Panel */
         .stats { display: flex; justify-content: space-around; background: white; padding: 15px; border-bottom: 3px solid #ddd; font-size: 24px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
         .timer { color: var(--danger); }
         .score { color: var(--primary); }
-
         #game-area { display: none; margin-top: 20px; }
         #start-screen { margin-top: 100px; }
         .word-display { font-size: 60px; font-weight: 800; color: var(--primary); margin: 15px 0; }
-        
-        /* 4 Seçenekli Kart Düzeni */
         .options-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
         .card-box { width: 260px; height: 260px; background: white; border: 8px solid white; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 16px rgba(0,0,0,0.1); transition: 0.3s; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .card-box:hover { transform: scale(1.05); border-color: var(--success); }
         .card-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-        /* Butonlar */
         .btn { padding: 15px 30px; font-size: 20px; border-radius: 10px; border: none; cursor: pointer; transition: 0.3s; margin: 10px; }
         .btn-start { background: var(--primary); color: white; }
         .btn-leaderboard { background: #607d8b; color: white; }
         .btn-restart { background: var(--success); color: white; }
-
-        /* Overlay Ekranlar */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); color: white; z-index: 200; padding-top: 30px; overflow-y: auto; }
         .leaderboard-table { width: 90%; max-width: 400px; margin: 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; text-align: left; }
         .entry { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 18px; }
@@ -43,17 +33,15 @@
 </head>
 <body>
 
-    <!-- Başlangıç Ekranı -->
     <div id="start-screen">
-        <h1 style="color: var(--primary);">Hoşgeldiniz</h1>
-        <p id="loading-msg">Dosyalar kontrol ediliyor... 🌍</p>
+        <h1 style="color: var(--primary);">Global Kelime Avcıları</h1>
+        <p id="loading-msg">Yükleniyor... 🌍</p>
         <div id="start-controls" style="display: none;">
             <button class="btn btn-start" onclick="startGame()">Oyunu Başlat</button>
             <button class="btn btn-leaderboard" onclick="openLeaderboard()">Sıralamayı Gör</button>
         </div>
     </div>
 
-    <!-- Oyun Alanı -->
     <div id="game-area">
         <div class="stats">
             <div class="score">Puan: <span id="score-val">0</span></div>
@@ -63,18 +51,16 @@
         <div class="options-container" id="options-container"></div>
     </div>
 
-    <!-- Bitiş Ekranı -->
     <div id="end-screen" class="overlay">
         <h1>Oyun Bitti! 🏁</h1>
         <h2 id="final-score-text">Puanınız: 0</h2>
         <div class="leaderboard-table">
             <h3 style="text-align: center; color: #ffca28;">🌍 DÜNYA SIRALAMASI</h3>
-            <div id="leaderboard-list">Liderler getiriliyor...</div>
+            <div id="leaderboard-list">Yükleniyor...</div>
         </div>
         <button class="btn btn-restart" onclick="location.reload()">Tekrar Oyna</button>
     </div>
 
-    <!-- Sadece Sıralama Ekranı -->
     <div id="only-leaderboard" class="overlay">
         <h2 style="margin-top: 50px;">Global Sıralama</h2>
         <div class="leaderboard-table">
@@ -86,7 +72,6 @@
     <audio id="audio-player"></audio>
 
     <script>
-        // --- FİREBASE BİLGİLERİN ---
         const firebaseConfig = {
             apiKey: "AIzaSyDRWyLsIvcu5szx4m-fRNGAopapWgCYDIo",
             authDomain: "wordgame-955de.firebaseapp.com",
@@ -100,20 +85,20 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // --- GITHUB BİLGİLERİN ---
         const GITHUB_USER = "yudegi"; 
         const REPO_NAME = "wordgame";
         const BRANCH = "main";
 
         let wordList = [], currentWord = null, score = 0, timeLeft = 30, gameActive = false;
 
-        // Sistemi Başlat ve Dosyaları Çek
+        // --- DEV FİLTRE LİSTESİ ---
+        const forbiddenWords = ["abaza","abazan","ag","ağzına sıçayım","ahmak","allah","allahsız","am","amarım","ambiti","am biti","amcığı","amcığın","amcığını","amcığınızı","amcık","amcık hoşafı","amcıklama","amcıklandı","amcik","amck","amckl","amcklama","amcklaryla","amckta","amcktan","amcuk","amık","amına","amınako","amına koy","amına koyarım","amına koyayım","amınakoyim","amına koyyim","amına s","amına sikem","amına sokam","amın feryadı","amını","amını s","amın oglu","amınoğlu","amın oğlu","amısına","amısını","amina","amina g","amina k","aminako","aminakoyarim","amina koyarim","amina koyayım","amina koyayim","aminakoyim","aminda","amindan","amindayken","amini","aminiyarraaniskiim","aminoglu","amin oglu","amiyum","amk","amkafa","amk çocuğu","amlarnzn","amlı","amm","ammak","ammna","amn","amna","amnda","amndaki","amngtn","amnn","amona","amq","amsız","amsiz","amsz","amteri","amugaa","amuğa","amuna","ana","anaaann","anal","analarn","anam","anamla","anan","anana","anandan","ananı","ananın","ananın am","ananın amı","ananın dölü","ananınki","ananısikerim","ananı sikerim","ananısikeyim","ananı sikeyim","ananızın","ananızın am","anani","ananin","ananisikerim","anani sikerim","ananisikeyim","anani sikeyim","anann","ananz","anas","anasını","anasının am","anası orospu","anasi","anasinin","anay","anayin","angut","anneni","annenin","annesiz","anuna","aptal","aq","a.q","a.q.","aq.","ass","atkafası","atmık","attırdığım","attrrm","auzlu","avrat","ayklarmalrmsikerim","azdım","azdır","azdırıcı","babaannesi kaşar","babanı","babanın","babani","babası pezevenk","bacağına sıçayım","bacına","bacını","bacının","bacini","bacn","bacndan","bacy","bastard","basur","beyinsiz","bızır","bitch","biting","bok","boka","bokbok","bokça","bokhu","bokkkumu","boklar","boktan","boku","bokubokuna","bokum","bombok","boner","bosalmak","boşalmak","cenabet","cibiliyetsiz","cibilliyetini","cibilliyetsiz","cif","cikar","cim","çük","dalaksız","dallama","daltassak","dalyarak","dalyarrak","dangalak","dassagi","diktim","dildo","dingil","dingilini","dinsiz","dkerim","domal","domalan","domaldı","domaldın","domalık","domalıyor","domalmak","domalmış","domalsın","domalt","domaltarak","domaltıp","domaltır","domaltırım","domaltip","domaltmak","dölü","dönek","düdük","eben","ebeni","ebenin","ebeninki","ebleh","ecdadını","ecdadini","embesil","emi","fahise","fahişe","feriştah","ferre","fuck","fucker","fuckin","fucking","gavad","gavat","geber","geberik","gebermek","gebermiş","gebertir","gerızekalı","gerizekalı","gerizekali","gerzek","giberim","giberler","gibis","gibiş","gibmek","gibtiler","goddamn","godoş","godumun","gotelek","gotlalesi","gotlu","gotten","gotundeki","gotunden","gotune","gotunu","gotveren","goyiim","goyum","goyuyim","goyyim","göt","göt deliği","götelek","göt herif","götlalesi","götlek","götoğlanı","göt oğlanı","götoş","götten","götü","götün","götüne","götünekoyim","götüne koyim","götünü","götveren","göt veren","göt verir","gtelek","gtn","gtnde","gtnden","gtne","gtten","gtveren","hasiktir","hassikome","hassiktir","has siktir","hassittir","haysiyetsiz","hayvan herif","hoşafı","hödük","hsktr","huur","ıbnelık","ibina","ibine","ibinenin","ibne","ibnedir","ibneleri","ibnelik","ibnelri","ibneni","ibnenin","ibnerator","ibnesi","idiot","idiyot","imansz","ipne","iserim","işerim","itoğlu it","kafam girsin","kafasız","kafasiz","kahpe","kahpenin","kahpenin feryadı","kaka","kaltak","kancık","kancik","kappe","karhane","kaşar","kavat","kavatn","kaypak","kayyum","kerane","kerhane","kerhanelerde","kevase","kevaşe","kevvase","koca göt","koduğmun","koduğmunun","kodumun","kodumunun","koduumun","koyarm","koyayım","koyiim","koyiiym","koyim","koyum","koyyim","krar","kukudaym","laciye boyadım","lavuk","liboş","madafaka","mal","malafat","malak","manyak","mcik","meme","memelerini","mezveleli","minaamcık","mincikliyim","mna","monakkoluyum","motherfucker","mudik","oc","ocuu","ocuun","OÇ","oç","o. çocuğu","oğlan","oğlancı","oğlu it","orosbucocuu","orospu","orospucocugu","orospu cocugu","orospu çoc","orospuçocuğu","orospu çocuğu","orospu çocuğudur","orospu çocukları","orospudur","orospular","orospunun","orospunun evladı","orospuydu","orospuyuz","orostoban","orostopol","orrospu","oruspu","oruspuçocuğu","oruspu çocuğu","osbir","ossurduum","ossurmak","ossuruk","osur","osurduu","osuruk","osururum","otuzbir","öküz","öşex","patlak zar","penis","pezevek","pezeven","pezeveng","pezevengi","pezevengin evladı","pezevenk","pezo","pic","pici","picler","piç","piçin oğlu","piç kurusu","piçler","pipi","pipiş","pisliktir","porno","pussy","puşt","puşttur","rahminde","revizyonist","s1kerim","s1kerm","s1krm","sakso","saksofon","salaak","salak","saxo","sekis","serefsiz","sevgi koyarım","sevişelim","sexs","sıçarım","sıçtığım","sıecem","sicarsin","sie","sik","sikdi","sikdiğim","sike","sikecem","sikem","siken","sikenin","siker","sikerim","sikerler","sikersin","sikertir","sikertmek","sikesen","sikesicenin","sikey","sikeydim","sikeyim","sikeym","siki","sikicem","sikici","sikien","sikienler","sikiiim","sikiiimmm","sikiim","sikiir","sikiirken","sikik","sikil","sikildiini","sikilesice","sikilmi","sikilmie","sikilmis","sikilmiş","sikilsin","sikim","sikimde","sikimden","sikime","sikimi","sikimiin","sikimin","sikimle","sikimsonik","sikimtrak","sikin","sikinde","sikinden","sikine","sikini","sikip","sikis","sikisek","sikisen","sikish","sikismis","sikiş","sikişen","sikişme","sikitiin","sikiyim","sikiym","sikiyorum","sikkim","sikko","sikleri","sikleriii","sikli","sikm","sikmek","sikmem","sikmiler","sikmisligim","siksem","sikseydin","sikseyidin","siksin","siksinbaya","siksinler","siksiz","siksok","siksz","sikt","sikti","siktigimin","siktigiminin","siktiğim","siktiğimin","siktiğiminin","siktii","siktiim","siktiimin","siktiiminin","siktiler","siktim","siktim","siktimin","siktiminin","siktir","siktir et","siktirgit","siktir git","siktirir","siktiririm","siktiriyor","siktir lan","siktirolgit","siktir ol git","sittimin","sittir","skcem","skecem","skem","sker","skerim","skerm","skeyim","skiim","skik","skim","skime","skmek","sksin","sksn","sksz","sktiimin","sktrr","skyim","slaleni","sokam","sokarım","sokarim","sokarm","sokarmkoduumun","sokayım","sokaym","sokiim","soktuğumunun","sokuk","sokum","sokuş","sokuyum","soxum","sulaleni","sülaleni","sülalenizi","sürtük","şerefsiz","şıllık","taaklarn","taaklarna","tarrakimin","tasak","tassak","taşak","taşşak","tipini s.k","tipinizi s.keyim","tiyniyat","toplarm","topsun","totoş","vajina","vajinanı","veled","veledizina","veled i zina","verdiimin","weled","weledizina","whore","xikeyim","yaaraaa","yalama","yalarım","yalarun","yaraaam","yarak","yaraksız","yaraktr","yaram","yaraminbasi","yaramn","yararmorospunun","yarra","yarraaaa","yarraak","yarraam","yarraamı","yarragi","yarragimi","yarragina","yarragindan","yarragm","yarrağ","yarrağım","yarrağımı","yarraimin","yarrak","yarram","yarramin","yarraminbaşı","yarramn","yarran","yarrana","yarrrak","yavak","yavş","yavşak","yavşaktır","yavuşak","yılışık","yilisik","yogurtlayam","yoğurtlayam","yrrak","zıkkımım","zibidi","zigsin","zikeyim","zikiiim","zikiim","zikik","zikim","ziksiiin","ziksiin","zulliyetini","zviyetini"];
+
         async function loadFiles() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/`);
                 const files = await res.json();
                 let data = {};
-
                 files.forEach(f => {
                     const parts = f.name.split('.');
                     if (parts.length > 1) {
@@ -125,15 +110,12 @@
                         if (ext === 'mp3') data[name].audio = url;
                     }
                 });
-
                 wordList = Object.values(data).filter(i => i.img && i.audio);
                 if (wordList.length >= 4) {
-                    document.getElementById('loading-msg').innerText = "Kelimeler başarıyla yüklendi.";
+                    document.getElementById('loading-msg').innerText = "Dosyalar hazır.";
                     document.getElementById('start-controls').style.display = 'block';
-                } else {
-                    document.getElementById('loading-msg').innerText = "Hata: En az 4 farklı kelime yüklemeniz gerekiyor.";
                 }
-            } catch (e) { document.getElementById('loading-msg').innerText = "Hata: Bağlantı kurulamadı!"; }
+            } catch (e) { document.getElementById('loading-msg').innerText = "Hata!"; }
         }
 
         function startGame() {
@@ -156,22 +138,15 @@
         function nextRound() {
             if (!gameActive) return;
             currentWord = wordList[Math.floor(Math.random() * wordList.length)];
-            
-            // Formatlama: İlk harf Büyük, diğerleri küçük
             const formattedName = currentWord.id.charAt(0).toUpperCase() + currentWord.id.slice(1).toLowerCase();
             document.getElementById('target-word').innerText = formattedName;
-            
             const player = document.getElementById('audio-player');
             player.src = currentWord.audio;
             player.play().catch(() => {});
-
             const container = document.getElementById('options-container');
             container.innerHTML = '';
-
-            // 4 Seçenek Oluştur
             let choices = [...wordList].sort(() => 0.5 - Math.random()).slice(0, 4);
             if (!choices.find(c => c.id === currentWord.id)) choices[0] = currentWord;
-            
             choices.sort(() => 0.5 - Math.random()).forEach(c => {
                 const div = document.createElement('div');
                 div.className = 'card-box';
@@ -182,9 +157,8 @@
                         document.getElementById('score-val').innerText = score;
                         nextRound();
                     } else {
-                        score = Math.max(0, score - 10); // Eksi 10 puan (0'ın altına düşmez)
+                        score = Math.max(0, score - 10);
                         document.getElementById('score-val').innerText = score;
-                        alert("Yanlış! -10 Puan");
                     }
                 };
                 container.appendChild(div);
@@ -197,9 +171,20 @@
             document.getElementById('end-screen').style.display = 'block';
             document.getElementById('final-score-text').innerText = "Puanınız: " + score;
             
-            const studentName = prompt("Rekorunu kaydetmek için ismini yaz:", "Öğrenci");
+            let studentName = prompt("İsminizi yazın:", "Öğrenci");
+            
+            let isForbidden = false;
             if (studentName) {
+                const lowerName = studentName.toLowerCase();
+                // Kelime içinde herhangi bir yasaklı kelime geçiyor mu kontrolü
+                isForbidden = forbiddenWords.some(word => lowerName.includes(word.toLowerCase()));
+            }
+
+            if (studentName && !isForbidden) {
                 database.ref('global_scores').push({ name: studentName, score: score, timestamp: Date.now() });
+            } else if (isForbidden) {
+                alert("Uygunsuz isim tespit edildi! Skorunuz 'Anonim' olarak kaydedildi.");
+                database.ref('global_scores').push({ name: "Anonim", score: score, timestamp: Date.now() });
             }
             updateLeaderboard('leaderboard-list');
         }
