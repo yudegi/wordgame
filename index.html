@@ -48,7 +48,6 @@
         .correct-icon { color: var(--success); }
         .wrong-icon { color: var(--danger); }
 
-        /* SAYAÇLAR - ALT KISIM */
         #word-counter { position: fixed; bottom: 5px; right: 10px; font-size: 11px; color: #888; font-weight: normal; }
         #play-counter { position: fixed; bottom: 5px; left: 10px; font-size: 11px; color: var(--primary); font-weight: bold; }
 
@@ -271,4 +270,40 @@
         }
 
         function updateLeaderboard(elementId) {
- 
+            database.ref('global_scores').orderByChild('score').limitToLast(100).once('value', (snap) => {
+                let rawData = [];
+                snap.forEach(child => { 
+                    rawData.push(child.val()); 
+                });
+                rawData.reverse();
+
+                let grouped = {};
+                rawData.forEach(item => {
+                    if (!grouped[item.score]) grouped[item.score] = [];
+                    if (!grouped[item.score].includes(item.name)) {
+                        grouped[item.score].push(item.name);
+                    }
+                });
+
+                let html = "";
+                let rank = 1;
+                const sortedScores = Object.keys(grouped).sort((a, b) => b - a);
+
+                sortedScores.slice(0, 10).forEach(sVal => {
+                    const names = grouped[sVal].join(" / ");
+                    html += `
+                        <div class="entry">
+                            <span>${rank}. <b>${names}</b></span>
+                            <span>${sVal} Puan</span>
+                        </div>
+                    `;
+                    rank++;
+                });
+                document.getElementById(elementId).innerHTML = html || "Henüz kayıt yok.";
+            });
+        }
+
+        loadFiles();
+    </script>
+</body>
+</html>
