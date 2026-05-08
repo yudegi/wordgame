@@ -96,7 +96,7 @@
         <h1>Oyun Bitti! 🏁</h1>
         <h2 id="final-score-text">Puanınız: 0</h2>
         <div class="leaderboard-table">
-            <h3 style="text-align: center; color: #ffca28;">🌍 DÜNYA SIRALAMASI</h3>
+            <h3 style="text-align: center; color: #ffca28;">🌍 DÜNYA SIRALAMASI (İLK 100)</h3>
             <div id="leaderboard-list">Yükleniyor...</div>
         </div>
         <button class="btn btn-restart" onclick="location.reload()">Tekrar Oyna</button>
@@ -270,7 +270,8 @@
         }
 
         function updateLeaderboard(elementId) {
-            database.ref('global_scores').orderByChild('score').limitToLast(100).once('value', (snap) => {
+            // limitToLast(200) yaptım ki gruplama için yeterli veri gelsin
+            database.ref('global_scores').orderByChild('score').limitToLast(200).once('value', (snap) => {
                 let rawData = [];
                 snap.forEach(child => { 
                     rawData.push(child.val()); 
@@ -289,7 +290,8 @@
                 let rank = 1;
                 const sortedScores = Object.keys(grouped).sort((a, b) => b - a);
 
-                sortedScores.slice(0, 10).forEach(sVal => {
+                // İLK 100 PUAN SEVİYESİNİ GÖSTER
+                sortedScores.slice(0, 100).forEach(sVal => {
                     const names = grouped[sVal].join(" / ");
                     html += `
                         <div class="entry">
